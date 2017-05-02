@@ -169,6 +169,9 @@ function init() {
    keyPiece = pieces[0];
    keyIndex = 0;
    keyPiece.style.borderColor = "red";
+
+   document.getElementById("jumble").onclick = jumbleIt;
+   document.getElementById("solve").onclick = solveIt;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~function keyGrab~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -186,24 +189,31 @@ function keyGrab(e){
 
   if (evt.keyCode == 32) {
     toggleMode();
+    return false;
   }
   else if (selectMode && evt.keyCode == 37) {
-    selectPiece(-1)
+    selectPiece(-1);
+    return false;
   }
   else if (selectMode && evt.keyCode == 39) {
     selectPiece(1);
+    return false;
   }
   else if (!selectMode && evt.keyCode == 37) {
     keyMove(-8, 0);
+    return false;
   }
   else if (!selectMode && evt.keyCode == 38) {
     keyMove(0, -8);
+    return false;
   }
   else if (!selectMode && evt.keyCode == 39) {
     keyMove(8, 0);
+    return false;
   }
   else if (!selectMode && evt.keyCode == 40) {
     keyMove(0, 8);
+    return false;
   }
 }
 
