@@ -89,10 +89,10 @@ function addEvent(object, evName, fnName, cap) {
 function removeEvent(object, evName, fnName, cap) {
   // Add an event handler to any element regardless of which even model it is
 
-  if (object.attachEvent) {
+  if (object.detachEvent) {
     object.detachEvent("on" + evName, fnName);  // We are in I.E.
   }
-  else if (object.addEventListener) {
+  else if (object.removeEventListener) {
     object.removeEventListener(evName, fnName, cap); // We are in W3C standard
   }
 }

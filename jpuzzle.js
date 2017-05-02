@@ -99,14 +99,18 @@
 
 
 */
-
+// Global variable
 var grids = new Array();
 var pieces = new Array();
 var mousePiece = null;
+var keyPiece = null;
+var keyIndex = null;
+var selectMode = true;
 
 var diffX = null;  // Difference in X
 var diffY = null;  // Difference in Y
 var maxZ = 1;
+var hoverGrid = null;
 
 window.onload = init;
 
@@ -150,6 +154,7 @@ function init() {
      pieces[i].style.left = getStyle(pieces[i], "left");
      pieces[i].style.width = getStyle(pieces[i], "width");
      pieces[i].style.height = getStyle(pieces[i], "height");
+     pieces[i].style.cursor = "pointer";
 
      addEvent(pieces[i], "mousedown", mouseGrab, false);
    }
@@ -160,9 +165,102 @@ function init() {
      grids[i].style.width = getStyle(grids[i], "width");
      grids[i].style.height = getStyle(grids[i], "height");
    }
+   document.onkeydown = keyGrab;
+   keyPiece = pieces[0];
+   keyIndex = 0;
+   keyPiece.style.borderColor = "red";
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~function keyGrab~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+function keyGrab(e){
+  /*
+    "Grabs" a puzzle piece using the keyboard. Sets the value of the keyPiece
+    variable and creates an event object to handle keyboard events.
+    Pressing a spacebar toggles the operating mode between Select Piece and
+    Move Piece. Pressing the four arrow keys either selects a new piece or moves
+    the current piece
+  */
+  var evt = e || window.event;
+
+  if (evt.keyCode == 32) {
+    toggleMode();
+  }
+  else if (selectMode && evt.keyCode == 37) {
+    selectPiece(-1)
+  }
+  else if (selectMode && evt.keyCode == 39) {
+    selectPiece(1);
+  }
+  else if (!selectMode && evt.keyCode == 37) {
+    keyMove(-8, 0);
+  }
+  else if (!selectMode && evt.keyCode == 38) {
+    keyMove(0, -8);
+  }
+  else if (!selectMode && evt.keyCode == 39) {
+    keyMove(8, 0);
+  }
+  else if (!selectMode && evt.keyCode == 40) {
+    keyMove(0, 8);
+  }
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~function keyMove~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+function keyMove(moveX, moveY) {
+  // Moves the keyPiece moveX pixels to the right and moveY pixels down.
+  keyPiece.style.left = parseInt(keyPiece.style.left) + moveX + "px";
+  keyPiece.style.top = parseInt(keyPiece.style.top) + moveY + "px";
+  highlightGrid(keyPiece);
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~function selectPiece~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+function selectPiece(diffIndex) {
+  // Changes the index of the selected keyPiece by a value of diffIndex sets the format of the new keyPiece
+  keyPiece.style.borderColor = "black";
+
+  keyIndex = keyIndex + diffIndex;
+  if (keyIndex == -1) {
+    keyIndex = pieces.length - 1;
+  }
+  else if (keyIndex == pieces.length) {
+    keyIndex = 0;
+  }
+    keyPiece = pieces[keyIndex];
+    keyPiece.style.borderColor = "red";
 
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~function toggleMode~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+function toggleMode() {
+  // Switches the Web page between Select Piece mode and Move Piece mode. Drops the currently moving keyPiece onto the Web page, aligning it with the grid
+  if (dropValid(keyPiece)) {
+    selectMode = !selectMode;
+  }
+  var modeBox = document.getElementById("keyMode");
+
+  if (selectMode) {
+    keyPiece.style.borderColor = "red";
+    alignPiece(keyPiece);
+    modeBox.value = "SELECT PIECE";
+    modeBox.style.backgroundColor = "red";
+  }
+  else {
+    keyPiece.style.borderColor = "rgb(151, 255, 151)";
+    maxZ++;
+    keyPiece.style.zIndex = maxZ;
+    modeBox.value = "MOVE PIECE";
+    modeBox.style.backgroundColor = "green";
+  }
+}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~function dropValid~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -191,6 +289,24 @@ function alignPiece(object) {
 }
 
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~function highlightGrid~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+function highlightGrid(object) {
+  // If object is over a grid square, sets the background color of the square to light green
+  if (hoverGrid) {
+    hoverGrid.style.backgroundColor = "";
+  }
+  for (var i = 0; i < grids.length; i++) {
+    if (withinIt(object, grids[i])) {
+      hoverGrid = grids[i];
+      hoverGrid.style.backgroundColor = "rgb(192, 255, 192)";
+      break;
+    }
+  }
+}
+
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~function mouseGrab~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -202,6 +318,7 @@ function mouseGrab(e) {
 
   maxZ++;
   mousePiece.style.zIndex = maxZ;
+  mousePiece.style.cursor = "move";
 
   var mouseX = evt.clientX;  // x-coordinate of pointer
   var mouseY = evt.clientY;  // Y-coordinate of pointer
@@ -228,6 +345,7 @@ function mouseMove(e) {
 
   mousePiece.style.left = mouseX + diffX + "px";
   mousePiece.style.top = mouseY + diffY + "px";
+  highlightGrid(mousePiece);
 }
 
 
@@ -241,5 +359,6 @@ function mouseDrop(e) {
     alignPiece(mousePiece);
     removeEvent(document, "mousemove", mouseMove, false);
     removeEvent(document, "mouseup", mouseDrop, false);
+    mousePiece.style.cursor = "pointer";
   }
 }
